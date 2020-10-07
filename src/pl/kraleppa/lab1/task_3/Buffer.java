@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Buffer {
-    private final List<String> messageList = new ArrayList<>();;
+    private final List<String> messageList = new ArrayList<>();
     private final int maxListSize;
     private int currentSize;
 
