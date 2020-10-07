@@ -1,7 +1,7 @@
 package pl.kraleppa.lab1.task_1;
 
 public class Counter {
-    private int counter = 0;
+    private Long counter = 0L;
 
     public void increment(){
         counter -= 1;
@@ -13,6 +13,6 @@ public class Counter {
 
     @Override
     public String toString() {
-        return Integer.toString(counter);
+        return counter.toString();
     }
 }
