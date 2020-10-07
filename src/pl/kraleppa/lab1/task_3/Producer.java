@@ -9,7 +9,7 @@ public class Producer extends Worker implements Runnable {
     public void run() {
 
         for(int i = 0; i < quantity; i++) {
-            buffer.put("message "+ i + " " + Thread.currentThread().getId());
+            buffer.put("message "+ i + " Producer id: " + Thread.currentThread().getId());
         }
 
     }

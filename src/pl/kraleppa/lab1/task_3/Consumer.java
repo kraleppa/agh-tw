@@ -9,7 +9,7 @@ public class Consumer extends Worker implements Runnable {
     public void run() {
 
         for(int i = 0; i < quantity; i++) {
-            System.out.println(buffer.take());
+            System.out.println(buffer.take() + " Consumer id: " + Thread.currentThread().getId());
         }
 
     }
