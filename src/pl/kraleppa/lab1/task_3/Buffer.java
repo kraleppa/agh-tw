@@ -14,10 +14,28 @@ public class Buffer {
     }
 
     public synchronized String take(){
-        return "";
+        while(currentSize == 0){
+            try{
+                wait();
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
+        }
+        notifyAll();
+        return messageList.get(--currentSize);
     }
 
-    public synchronized void put(String message){
+    public synchronized void put(String message) {
+        while(currentSize == maxListSize){
+            try{
+                wait();
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
+        }
+        messageList.add(currentSize, message);
+        currentSize++;
 
+        notifyAll();
     }
 }
