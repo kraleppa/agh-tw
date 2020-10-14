@@ -1,13 +1,13 @@
 package pl.kraleppa.lab2.task_1;
 
-public class Semaphore {
+public class BinarySemaphore {
     private boolean signal;
 
-    public Semaphore(boolean signal) {
+    public BinarySemaphore(boolean signal) {
         this.signal = signal;
     }
 
-    public Semaphore() {
+    public BinarySemaphore() {
         this(true);
     }
 

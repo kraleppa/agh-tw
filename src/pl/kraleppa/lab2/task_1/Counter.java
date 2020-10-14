@@ -2,7 +2,7 @@ package pl.kraleppa.lab2.task_1;
 
 public class Counter {
     private Long counter = 0L;
-    private final Semaphore semaphore = new Semaphore();
+    private final BinarySemaphore semaphore = new BinarySemaphore();
 
     public void increment() throws InterruptedException {
         semaphore.acquire();
