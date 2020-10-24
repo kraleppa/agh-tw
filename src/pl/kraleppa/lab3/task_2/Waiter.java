@@ -53,4 +53,8 @@ public class Waiter {
     public Set<Integer> getWaitingForPair() {
         return waitingForPair;
     }
+
+    public int getEatingPair() {
+        return eatingPair;
+    }
 }

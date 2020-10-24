@@ -8,7 +8,9 @@ public class Log {
     public static Set<Integer> waitingForTable = new HashSet<>();
 
     public static void log(String string){
-        System.out.println(string + "\t\t\t" + "\u001B[33m Waiting for pair: " + waiter.getWaitingForPair() + "\u001B[0m"
+        System.out.println(string + "\t\t\t" + "\u001B[36m Eating pair: " +
+                (waiter.getEatingPair() == -1 ? " " : waiter.getEatingPair()) +  "\u001B[0m"
+                + "\t\t\t" + "\u001B[33m Waiting for pair: " + waiter.getWaitingForPair() + "\u001B[0m"
                 + "\t\t\t" + "\u001B[31m Waiting for table: " + waitingForTable + "\u001B[0m");
     }
 
