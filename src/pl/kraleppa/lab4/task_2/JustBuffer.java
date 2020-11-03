@@ -7,19 +7,18 @@ import java.util.concurrent.locks.ReentrantLock;
 public class JustBuffer implements Buffer {
     private final int bufferSize;
     private int currentSize = 0;
-    private final Lock lock = new ReentrantLock();
-    private final Condition waitForSmallConsume = lock.newCondition();
-    private final Condition waitForSmallProduce = lock.newCondition();
+    private final Lock lock = new ReentrantLock(true);
+    private final Condition waitForBecomeFirstConsumer = lock.newCondition();
+    private final Condition waitFirstToConsume = lock.newCondition();
 
-    private final Condition waitForBigConsume = lock.newCondition();
-    private final Condition waitForBigProduce = lock.newCondition();
+    private final Condition waitForBecomeFirstProducer = lock.newCondition();
+    private final Condition waitFirstToProduce = lock.newCondition();
     DataHolder dataHolder = new DataHolder();
 
-    private int waitingSmallProducers = 0;
-    private int waitingBigProducers = 0;
-
-    private int waitingSmallConsumers = 0;
-    private int waitingBigConsumers = 0;
+    private int waitingProducers = 0;
+    private int waitingConsumers = 0;
+    private boolean isFirstProducerFree = true;
+    private boolean isFirstConsumerFree = true;
 
     public JustBuffer(int m) {
         this.bufferSize = m * 2;
@@ -28,74 +27,62 @@ public class JustBuffer implements Buffer {
 
     public void add(int size) throws InterruptedException {
         lock.lock();
-        dataHolder.startTime(Thread.currentThread().getId());
-        if (size > bufferSize / 4) {
-            waitingBigProducers++;
-        } else {
-            waitingSmallProducers++;
+
+        dataHolder.startTime(size);
+        while (!isFirstProducerFree){
+            waitingProducers++;
+            waitForBecomeFirstProducer.await();
+            waitingProducers--;
         }
+
+        System.out.println("Waiting to add " + size);
+
+
+        isFirstProducerFree = false;
         while (currentSize + size > bufferSize){
-            if (size > bufferSize / 4) {
-                waitForBigProduce.await();
-            } else {
-                waitForSmallProduce.await();
-            }
-        }
-
-        dataHolder.stopTime(Thread.currentThread().getId());
-
-        if (size > bufferSize / 4) {
-            waitingBigProducers--;
-        } else {
-            waitingSmallProducers--;
+            System.out.println("Waiting to add " + size);
+            waitFirstToProduce.await();
         }
 
         currentSize += size;
-        if (currentSize > bufferSize / 2 && waitingBigConsumers != 0) {
-            waitForBigConsume.signalAll();
-        } else {
-            waitForSmallConsume.signalAll();
-        }
+        isFirstProducerFree = true;
+        waitFirstToConsume.signal();
+        waitForBecomeFirstProducer.signal();
+
+        dataHolder.stopTime();
 
         System.out.println("Added: " + size + " Current size: " + currentSize + " Waiting producers: "
-                + (waitingSmallProducers + waitingBigProducers) + " Waiting consumers: " + (waitingSmallConsumers + waitingBigConsumers));
+                + waitingProducers + " Waiting consumers: " + waitingConsumers);
 
         lock.unlock();
     }
 
     public void get(int size) throws InterruptedException {
         lock.lock();
-        dataHolder.startTime(Thread.currentThread().getId());
-        if (size > bufferSize / 4){
-            waitingBigConsumers++;
-        } else {
-            waitingSmallConsumers++;
-        }
-        while (currentSize < size){
-            if (size > bufferSize / 4){
-                waitForBigConsume.await();
-            } else {
-                waitForSmallConsume.await();
-            }
-        }
-        dataHolder.stopTime(Thread.currentThread().getId());
 
-        if (size > bufferSize / 4){
-            waitingBigConsumers--;
-        } else {
-            waitingSmallConsumers--;
+        dataHolder.startTime(size);
+        while (!isFirstConsumerFree){
+            waitingConsumers++;
+            waitForBecomeFirstConsumer.await();
+            waitingConsumers--;
         }
+
+        isFirstConsumerFree = false;
+        while(currentSize < size){
+            System.out.println("Waiting to consume " + size);
+            waitFirstToConsume.await();
+        }
+
+
         currentSize -= size;
+        isFirstConsumerFree = true;
+        waitFirstToProduce.signal();
+        waitForBecomeFirstConsumer.signal();
 
-        if (currentSize < bufferSize / 2 && waitingBigProducers != 0){
-            waitForBigProduce.signalAll();
-        } else {
-            waitForSmallProduce.signalAll();
-        }
+        dataHolder.stopTime();
 
-        System.out.println("Added: " + size + " Current size: " + currentSize + " Waiting producers: "
-                + (waitingSmallProducers + waitingBigProducers) + " Waiting consumers: " + (waitingSmallConsumers + waitingBigConsumers));
-
+        System.out.println("Consumed: " + size + " Current size: " + currentSize + " Waiting producers: "
+                + waitingProducers+ " Waiting consumers: " + waitingConsumers);
 
         lock.unlock();
     }
