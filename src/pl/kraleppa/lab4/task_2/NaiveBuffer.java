@@ -14,16 +14,23 @@ public class NaiveBuffer implements Buffer {
     private int waitingProducers = 0;
     private int waitingConsumers = 0;
 
+    DataHolder dataHolder = new DataHolder();
+
     public NaiveBuffer(int m) {
         this.bufferSize = m * 2;
+        dataHolder.start();
     }
 
     public void add(int size) throws InterruptedException {
         lock.lock();
+        dataHolder.startTime(Thread.currentThread().getId());
+        waitingProducers++;
         while (currentSize + size > bufferSize){
-            waitingProducers++;
+
             waitForProduce.await();
         }
+        waitingProducers--;
+        dataHolder.stopTime(Thread.currentThread().getId());
         currentSize += size;
         waitForConsume.signalAll();
 
@@ -34,10 +41,13 @@ public class NaiveBuffer implements Buffer {
 
     public void get(int size) throws InterruptedException {
         lock.lock();
+        dataHolder.startTime(Thread.currentThread().getId());
+        waitingConsumers++;
         while (currentSize < size){
-            waitingConsumers++;
             waitForConsume.await();
         }
+        waitingConsumers--;
+        dataHolder.stopTime(Thread.currentThread().getId());
         currentSize -= size;
         waitForProduce.signalAll();
 

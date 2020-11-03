@@ -13,6 +13,7 @@ public class JustBuffer implements Buffer {
 
     private final Condition waitForBigConsume = lock.newCondition();
     private final Condition waitForBigProduce = lock.newCondition();
+    DataHolder dataHolder = new DataHolder();
 
     private int waitingSmallProducers = 0;
     private int waitingBigProducers = 0;
@@ -22,19 +23,33 @@ public class JustBuffer implements Buffer {
 
     public JustBuffer(int m) {
         this.bufferSize = m * 2;
+        dataHolder.start();
     }
 
     public void add(int size) throws InterruptedException {
         lock.lock();
+        dataHolder.startTime(Thread.currentThread().getId());
+        if (size > bufferSize / 4) {
+            waitingBigProducers++;
+        } else {
+            waitingSmallProducers++;
+        }
         while (currentSize + size > bufferSize){
             if (size > bufferSize / 4) {
-                waitingBigProducers++;
                 waitForBigProduce.await();
             } else {
-                waitingSmallProducers++;
                 waitForSmallProduce.await();
             }
         }
+
+        dataHolder.stopTime(Thread.currentThread().getId());
+
+        if (size > bufferSize / 4) {
+            waitingBigProducers--;
+        } else {
+            waitingSmallProducers--;
+        }
+
         currentSize += size;
         if (currentSize > bufferSize / 2 && waitingBigConsumers != 0) {
             waitForBigConsume.signalAll();
@@ -50,17 +65,29 @@ public class JustBuffer implements Buffer {
 
     public void get(int size) throws InterruptedException {
         lock.lock();
+        dataHolder.startTime(Thread.currentThread().getId());
+        if (size > bufferSize / 4){
+            waitingBigConsumers++;
+        } else {
+            waitingSmallConsumers++;
+        }
         while (currentSize < size){
             if (size > bufferSize / 4){
-                waitingBigConsumers++;
                 waitForBigConsume.await();
             } else {
-                waitingSmallConsumers++;
                 waitForSmallConsume.await();
             }
         }
+        dataHolder.stopTime(Thread.currentThread().getId());
+
+        if (size > bufferSize / 4){
+            waitingBigConsumers--;
+        } else {
+            waitingSmallConsumers--;
+        }
         currentSize -= size;
-        if (currentSize < bufferSize / 2){
+
+        if (currentSize < bufferSize / 2 && waitingBigProducers != 0){
             waitForBigProduce.signalAll();
         } else {
             waitForSmallProduce.signalAll();
