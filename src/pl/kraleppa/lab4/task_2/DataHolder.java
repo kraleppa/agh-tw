@@ -45,6 +45,8 @@ public class DataHolder extends Thread{
     @Override
     public void run() {
         super.run();
+
+
         try {
             sleep(20000);
             this.fillPortions();
@@ -56,6 +58,8 @@ public class DataHolder extends Thread{
                     e.printStackTrace();
                 }
             });
+            myWriter.close();
+
 
         } catch (Exception e) {
             e.printStackTrace();
