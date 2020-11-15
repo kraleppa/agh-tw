@@ -17,13 +17,22 @@ public class Mandelbrot extends JFrame {
     private final List<MandelbrotTile> tiles = new ArrayList<>();
     private final TaskScheduler taskScheduler;
 
-    public Mandelbrot() {
+    public Mandelbrot(int numberOfTasks, int numberOfThreads) {
         super("Mandelbrot Set");
         setBounds(100, 100, 800, 600);
         setResizable(false);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-        taskScheduler = new TaskScheduler(4, getWidth(), getHeight());
+        taskScheduler = new TaskScheduler(numberOfTasks, numberOfThreads, getWidth(), getHeight());
+    }
+
+    public Mandelbrot(int numberOfThreads){
+        super("Mandelbrot Set");
+        setBounds(100, 100, 800, 600);
+        setResizable(false);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+        taskScheduler = new TaskScheduler(getWidth() * getHeight(), numberOfThreads, getWidth(), getHeight());
     }
 
     @Override
@@ -32,11 +41,15 @@ public class Mandelbrot extends JFrame {
     }
 
     public void start() throws ExecutionException, InterruptedException {
+        long start = System.nanoTime();
         List<Future<List<ProcessedPoint>>> list = taskScheduler.start();
         for (Future<List<ProcessedPoint>> future : list){
             List<ProcessedPoint> processedPoints = future.get();
             processedPoints
                     .forEach(point -> image.setRGB(point.x(), point.y(), point.value() | (point.value() << 8)));
         }
+        long time = System.nanoTime() - start;
+
+        System.out.println((double) time / 1_000_000_000);
     }
 }

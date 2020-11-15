@@ -14,12 +14,12 @@ public class TaskScheduler {
     private final List<Task> taskList;
     private final ExecutorService executorService;
 
-    public TaskScheduler(int numberOfTasks, int width, int height) {
+    public TaskScheduler(int numberOfTasks, int numberOfThreads, int width, int height) {
         this.numberOfTasks = numberOfTasks;
         this.width = width;
         this.height = height;
         this.taskList = new ArrayList<>();
-        this.executorService = Executors.newFixedThreadPool(numberOfTasks);
+        this.executorService = Executors.newFixedThreadPool(numberOfThreads);
         for (int i = 0; i < numberOfTasks; i++){
             taskList.add(new Task());
         }
