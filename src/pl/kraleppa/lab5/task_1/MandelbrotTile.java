@@ -1,4 +1,4 @@
-package pl.kraleppa.lab5;
+package pl.kraleppa.lab5.task_1;
 
 import java.util.concurrent.Future;
 

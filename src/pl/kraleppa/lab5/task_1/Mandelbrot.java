@@ -1,4 +1,4 @@
-package pl.kraleppa.lab5;
+package pl.kraleppa.lab5.task_1;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
@@ -23,7 +23,6 @@ public class Mandelbrot extends JFrame {
         setResizable(false);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         I = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-        int taskNumber = getHeight() * getWidth();
         executor = Executors.newFixedThreadPool(4);
         count();
     }
