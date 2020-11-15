@@ -16,7 +16,6 @@ public class Task implements Callable<List<ProcessedPoint>> {
     @Override
     public List<ProcessedPoint> call() {
         pointsToProcess.forEach(this::processPoint);
-        System.out.println(Thread.currentThread().getId());
         return processedPoints;
     }
 

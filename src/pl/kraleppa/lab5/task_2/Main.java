@@ -7,6 +7,5 @@ public class Main {
         Mandelbrot mandelbrot = new Mandelbrot(4);
         mandelbrot.start();
         mandelbrot.setVisible(true);
-
     }
 }

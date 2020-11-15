@@ -34,7 +34,6 @@ public class TaskScheduler {
 
     private void splitPoints(){
         int i = 0;
-        List<Point> points = new ArrayList<>();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 taskList.get(i % numberOfTasks).addPoint(new Point(x, y));
