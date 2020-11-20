@@ -76,3 +76,4 @@ test-output
 atlassian-ide-plugin.xml
 .gradletasknamecache
 /Dockerfile
+/node_modules/
