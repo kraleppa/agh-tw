@@ -76,19 +76,24 @@ Philosopher.prototype.startNaive = function(count) {
         setTimeout(() => eatingProcess(id, count), 0)
 }
 
+let timeSum = 0;
 Philosopher.prototype.startAsym = function(count) {
     var forks = this.forks,
         id = this.id,
         f1 = id % 2 === 0 ? this.f1 : this.f2,
         f2 = id % 2 === 0 ? this.f2 : this.f1;
 
+    let startTime;
+
     const eatingProcess = (id, count) => {
         console.log(`Philosopher ${id} entering`)
         showForks()
+        startTime = Date.now();
         forks[f1].acquire(() => {
             console.log(`Philosopher ${id} has 1st fork`)
             showForks()
             forks[f2].acquire(() => {
+                timeSum = timeSum + (Date.now() - startTime)
                 console.log(`Philosopher ${id} has 2nd fork`)
                 showForks()
                 console.log(`Philosopher ${id} starts to eat`)
@@ -125,14 +130,15 @@ Philosopher.prototype.startConductor = function(count) {
         f2 = this.f2,
         id = this.id;
 
+    let startTime
 
-
-    const eatingProcess = (id, count) => {
+    const eatingProcess = (id, count, startTime) => {
         console.log(`Philosopher ${id} entering ${waitingCount}`)
         showForks()
         if (waitingCount === 0){
-            setTimeout(() => eatingProcess(id, count), 2);
+            setTimeout(() => eatingProcess(id, count, startTime), 2);
         } else {
+            timeSum = timeSum + (Date.now() - startTime)
             waitingCount--;
             forks[f1].acquire(() => {
                 console.log(`Philosopher ${id} has 1st fork ${waitingCount}`)
@@ -154,7 +160,7 @@ Philosopher.prototype.startConductor = function(count) {
                                 showForks()
                                 count--;
                                 if (count > 0){
-                                    setTimeout(() => eatingProcess(id, count), 2)
+                                    setTimeout(() => eatingProcess(id, count, Date.now()), 2)
                                 }
                             })
                         }, 2)
@@ -164,11 +170,11 @@ Philosopher.prototype.startConductor = function(count) {
         }
     }
 
-    setTimeout(() => eatingProcess(id, count), 0)
+    setTimeout(() => eatingProcess(id, count, Date.now()), 0)
 }
 
 
-var N = 5;
+var N = 25;
 var forks = [];
 var philosophers = []
 for (var i = 0; i < N; i++) {
@@ -180,6 +186,8 @@ for (var i = 0; i < N; i++) {
 }
 
 for (var i = 0; i < N; i++) {
-    philosophers[i].startConductor(1000);
+    philosophers[i].startConductor(100);
 }
+
+setTimeout(() => console.log(timeSum), 18000)
 
