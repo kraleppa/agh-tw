@@ -117,6 +117,7 @@ Philosopher.prototype.startAsym = function(count) {
     setTimeout(() => eatingProcess(id, count), 0)
 
 }
+var waitingCount = 4;
 
 Philosopher.prototype.startConductor = function(count) {
     var forks = this.forks,
@@ -124,9 +125,46 @@ Philosopher.prototype.startConductor = function(count) {
         f2 = this.f2,
         id = this.id;
 
-    // zaimplementuj rozwiazanie z kelnerem
-    // kazdy filozof powinien 'count' razy wykonywac cykl
-    // podnoszenia widelcow -- jedzenia -- zwalniania widelcow
+
+
+    const eatingProcess = (id, count) => {
+        console.log(`Philosopher ${id} entering ${waitingCount}`)
+        showForks()
+        if (waitingCount === 0){
+            setTimeout(() => eatingProcess(id, count), 2);
+        } else {
+            waitingCount--;
+            forks[f1].acquire(() => {
+                console.log(`Philosopher ${id} has 1st fork ${waitingCount}`)
+                showForks()
+                forks[f2].acquire(() => {
+                    console.log(`Philosopher ${id} has 2nd fork ${waitingCount}`)
+                    showForks()
+                    console.log(`Philosopher ${id} starts to eat ${waitingCount}`)
+                    showForks()
+                    setTimeout(() => {
+                        console.log(`Philosopher ${id} ends eating ${waitingCount}`)
+                        showForks()
+                        forks[f1].release(() => {
+                            console.log(`Philosopher ${id} release 1st fork ${waitingCount}`)
+                            showForks()
+                            forks[f2].release(() => {
+                                waitingCount++;
+                                console.log(`Philosopher ${id} release 2nd fork ${waitingCount}`)
+                                showForks()
+                                count--;
+                                if (count > 0){
+                                    setTimeout(() => eatingProcess(id, count), 2)
+                                }
+                            })
+                        }, 2)
+                    })
+                })
+            })
+        }
+    }
+
+    setTimeout(() => eatingProcess(id, count), 0)
 }
 
 
@@ -142,6 +180,6 @@ for (var i = 0; i < N; i++) {
 }
 
 for (var i = 0; i < N; i++) {
-    philosophers[i].startAsym(2000);
+    philosophers[i].startConductor(1000);
 }
 
