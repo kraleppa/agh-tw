@@ -78,10 +78,43 @@ Philosopher.prototype.startNaive = function(count) {
 
 Philosopher.prototype.startAsym = function(count) {
     var forks = this.forks,
-        f1 = this.f1,
-        f2 = this.f2,
-        id = this.id;
+        id = this.id,
+        f1 = id % 2 === 0 ? this.f1 : this.f2,
+        f2 = id % 2 === 0 ? this.f2 : this.f1;
 
+    const eatingProcess = (id, count) => {
+        console.log(`Philosopher ${id} entering`)
+        showForks()
+        forks[f1].acquire(() => {
+            console.log(`Philosopher ${id} has 1st fork`)
+            showForks()
+            forks[f2].acquire(() => {
+                console.log(`Philosopher ${id} has 2nd fork`)
+                showForks()
+                console.log(`Philosopher ${id} starts to eat`)
+                showForks()
+                setTimeout(() => {
+                    console.log(`Philosopher ${id} ends eating`)
+                    showForks()
+                    forks[f1].release(() => {
+                        console.log(`Philosopher ${id} release 1st fork`)
+                        showForks()
+                        forks[f2].release(() => {
+                            console.log(`Philosopher ${id} release 2nd fork`)
+                            showForks()
+                            count--;
+                            if (count > 0){
+                                setTimeout(() => eatingProcess(id, count), 2)
+
+                            }
+                        })
+                    }, 2)
+                })
+            })
+        })
+    }
+
+    setTimeout(() => eatingProcess(id, count), 0)
 
 }
 
@@ -109,6 +142,6 @@ for (var i = 0; i < N; i++) {
 }
 
 for (var i = 0; i < N; i++) {
-    philosophers[i].startNaive(2000);
+    philosophers[i].startAsym(2000);
 }
 
